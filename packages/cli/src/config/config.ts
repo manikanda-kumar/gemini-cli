@@ -18,6 +18,7 @@ import {
   DEFAULT_GEMINI_EMBEDDING_MODEL,
   FileDiscoveryService,
   TelemetryTarget,
+  AuthType,
 } from '@google/gemini-cli-core';
 import { Settings } from './settings.js';
 
@@ -53,6 +54,9 @@ interface CliArgs {
   telemetryTarget: string | undefined;
   telemetryOtlpEndpoint: string | undefined;
   telemetryLogPrompts: boolean | undefined;
+  authType: string | undefined;
+  selfHostedEndpoint: string | undefined;
+  selfHostedApiKey: string | undefined;
 }
 
 async function parseArguments(): Promise<CliArgs> {
@@ -60,8 +64,28 @@ async function parseArguments(): Promise<CliArgs> {
     .option('model', {
       alias: 'm',
       type: 'string',
-      description: `Model`,
+      description: `Model to use for generation.`,
       default: process.env.GEMINI_MODEL || DEFAULT_GEMINI_MODEL,
+    })
+    .option('auth-type', {
+      type: 'string',
+      description: 'Authentication method to use.',
+      choices: [
+        AuthType.LOGIN_WITH_GOOGLE,
+        AuthType.USE_GEMINI,
+        AuthType.USE_VERTEX_AI,
+        AuthType.SELF_HOSTED_OPENAI,
+      ],
+    })
+    .option('self-hosted-endpoint', {
+      type: 'string',
+      description:
+        'Endpoint URL for self-hosted OpenAI-compatible model. Required if auth-type is self-hosted-openai.',
+    })
+    .option('self-hosted-api-key', {
+      type: 'string',
+      description:
+        'API key for self-hosted OpenAI-compatible model (optional).',
     })
     .option('prompt', {
       alias: 'p',
@@ -246,6 +270,10 @@ export async function loadCliConfig(
     bugCommand: settings.bugCommand,
     model: argv.model!,
     extensionContextFilePaths,
+    // Pass self-hosted OpenAI settings
+    authType: argv.authType || settings.selectedAuthType,
+    selfHostedEndpoint: argv.selfHostedEndpoint || settings.selfHostedEndpoint,
+    selfHostedApiKey: argv.selfHostedApiKey || settings.selfHostedApiKey,
   });
 }
 

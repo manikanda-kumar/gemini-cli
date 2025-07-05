@@ -108,3 +108,57 @@ GOOGLE_CLOUD_PROJECT="your-project-id"
 GEMINI_API_KEY="your-gemini-api-key"
 EOF
 ```
+
+4.  **<a id="self-hosted-openai"></a>Self-Hosted OpenAI-Compatible Endpoint:**
+    - This option allows you to use Gemini CLI with a self-hosted Large Language Model (LLM) that exposes an OpenAI-compatible API (e.g., using vLLM).
+    - **Authentication Type:** Set the authentication type to `self-hosted-openai`.
+      - Using the command-line:
+        ```bash
+        gemini --auth-type self-hosted-openai ...
+        ```
+      - Or in your `settings.json`:
+        ```json
+        {
+          "selectedAuthType": "self-hosted-openai",
+          "selfHostedEndpoint": "YOUR_ENDPOINT_URL",
+          "selfHostedApiKey": "YOUR_OPTIONAL_API_KEY"
+        }
+        ```
+    - **Endpoint URL:** You **must** provide the URL of your self-hosted endpoint.
+      - Using the command-line:
+        ```bash
+        gemini --self-hosted-endpoint "YOUR_ENDPOINT_URL" ...
+        ```
+      - Or via environment variable:
+        ```bash
+        export SELF_HOSTED_OPENAI_ENDPOINT="YOUR_ENDPOINT_URL"
+        ```
+        (You can add this to your `.env` file as described in [Persisting Environment Variables](#persisting-environment-variables-with-env-files).)
+      - Or in your `settings.json` (see example above).
+    - **API Key (Optional):** If your self-hosted endpoint requires an API key, you can provide it.
+      - Using the command-line:
+        ```bash
+        gemini --self-hosted-api-key "YOUR_API_KEY" ...
+        ```
+      - Or via environment variable:
+        ```bash
+        export SELF_HOSTED_OPENAI_API_KEY="YOUR_API_KEY"
+        ```
+        (You can add this to your `.env` file.)
+      - Or in your `settings.json` (see example above).
+
+    - **Example Usage:**
+      ```bash
+      # Using command-line arguments
+      gemini --auth-type self-hosted-openai \
+             --self-hosted-endpoint "http://localhost:8000/v1" \
+             --self-hosted-api-key "your-secret-key" \
+             "What is the capital of France?"
+
+      # Using environment variables (assuming they are set)
+      gemini --auth-type self-hosted-openai "What is the capital of France?"
+
+      # Using settings.json (assuming it's configured)
+      gemini "What is the capital of France?"
+      ```
+    - **Note on Models:** When using a self-hosted endpoint, the `--model` option should specify a model name that your self-hosted endpoint recognizes. The Gemini CLI will pass this model name directly to the endpoint.

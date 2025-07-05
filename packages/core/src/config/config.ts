@@ -130,6 +130,9 @@ export interface ConfigParameters {
   bugCommand?: BugCommandSettings;
   model: string;
   extensionContextFilePaths?: string[];
+  authType?: AuthType; // Added for self-hosted
+  selfHostedEndpoint?: string; // Added for self-hosted
+  selfHostedApiKey?: string; // Added for self-hosted
 }
 
 export class Config {
@@ -170,6 +173,10 @@ export class Config {
   private readonly extensionContextFilePaths: string[];
   private modelSwitchedDuringSession: boolean = false;
   flashFallbackHandler?: FlashFallbackHandler;
+  // Added for self-hosted
+  private readonly authType?: AuthType;
+  private readonly selfHostedEndpoint?: string;
+  private readonly selfHostedApiKey?: string;
 
   constructor(params: ConfigParameters) {
     this.sessionId = params.sessionId;
@@ -211,6 +218,10 @@ export class Config {
     this.bugCommand = params.bugCommand;
     this.model = params.model;
     this.extensionContextFilePaths = params.extensionContextFilePaths ?? [];
+    // Added for self-hosted
+    this.authType = params.authType;
+    this.selfHostedEndpoint = params.selfHostedEndpoint;
+    this.selfHostedApiKey = params.selfHostedApiKey;
 
     if (params.contextFileName) {
       setGeminiMdFilename(params.contextFileName);
@@ -241,8 +252,12 @@ export class Config {
 
     const contentConfig = await createContentGeneratorConfig(
       modelToUse,
-      authMethod,
+      // Use the authMethod passed to refreshAuth, or the instance's authType if not provided
+      authMethod || this.authType,
       this,
+      // Pass self-hosted params from Config instance to createContentGeneratorConfig
+      this.selfHostedEndpoint,
+      this.selfHostedApiKey,
     );
 
     const gc = new GeminiClient(this);

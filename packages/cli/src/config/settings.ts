@@ -38,6 +38,8 @@ export interface AccessibilitySettings {
 export interface Settings {
   theme?: string;
   selectedAuthType?: AuthType;
+  selfHostedEndpoint?: string; // Added for self-hosted OpenAI
+  selfHostedApiKey?: string; // Added for self-hosted OpenAI
   sandbox?: boolean | string;
   coreTools?: string[];
   excludeTools?: string[];
