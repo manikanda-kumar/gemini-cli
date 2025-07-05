@@ -271,7 +271,7 @@ export async function loadCliConfig(
     model: argv.model!,
     extensionContextFilePaths,
     // Pass self-hosted OpenAI settings
-    authType: argv.authType || settings.selectedAuthType,
+    authType: (argv.authType || settings.selectedAuthType) as AuthType | undefined,
     selfHostedEndpoint: argv.selfHostedEndpoint || settings.selfHostedEndpoint,
     selfHostedApiKey: argv.selfHostedApiKey || settings.selfHostedApiKey,
   });

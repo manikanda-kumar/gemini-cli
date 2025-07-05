@@ -128,7 +128,7 @@ describe('contentGenerator', () => {
 
   describe('createContentGenerator (Self-Hosted)', () => {
     it('should return SelfHostedOpenAIContentGenerator for SELF_HOSTED_OPENAI auth type with endpoint', async () => {
-      const { createContentGenerator, OpenAI } = await import('./contentGenerator.js');
+      const { createContentGenerator } = await import('./contentGenerator.js');
       const { default: OpenAIConstructor } = await import('openai');
 
 
@@ -168,7 +168,7 @@ describe('contentGenerator', () => {
     });
 
     it('should use undefined API key for SelfHostedOpenAIContentGenerator if not provided', async () => {
-      const { createContentGenerator, OpenAI } = await import('./contentGenerator.js');
+      const { createContentGenerator } = await import('./contentGenerator.js');
       const { default: OpenAIConstructor } = await import('openai');
 
       const config = {

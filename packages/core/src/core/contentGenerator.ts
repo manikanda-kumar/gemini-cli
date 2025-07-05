@@ -147,11 +147,6 @@ export async function createContentGenerator(
     return googleGenAI.models;
   }
 
-  throw new Error(
-    `Error creating contentGenerator: Unsupported authType: ${config.authType}`,
-  );
-  // } // This brace was removed
-
   // Fallback or error for unhandled auth types
   if (config.authType === AuthType.SELF_HOSTED_OPENAI) {
     if (!config.selfHostedEndpoint) {
@@ -159,6 +154,13 @@ export async function createContentGenerator(
         'SELF_HOSTED_OPENAI auth type requires SELF_HOSTED_OPENAI_ENDPOINT to be set.',
       );
     }
+
+    try {
+      new URL(config.selfHostedEndpoint);
+    } catch {
+      throw new Error('Invalid self-hosted endpoint URL format');
+    }
+    
     return new SelfHostedOpenAIContentGenerator(
       config.selfHostedApiKey,
       config.selfHostedEndpoint,
@@ -178,18 +180,25 @@ function geminiContentToOpenAIMessages(
   geminiContents: GenerateContentParameters['contents'],
 ): OpenAI.Chat.Completions.ChatCompletionMessageParam[] {
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
-  for (const content of geminiContents) {
+  
+  // Handle both array and single content
+  const contentsArray = Array.isArray(geminiContents) ? geminiContents : [geminiContents];
+  
+  for (const content of contentsArray) {
+    // Cast to Content type to access role and parts
+    const contentObj = content as Content;
+    
     const role =
-      content.role === 'model'
+      contentObj.role === 'model'
         ? 'assistant'
-        : (content.role as OpenAI.Chat.Completions.ChatCompletionRole);
+        : (contentObj.role as OpenAI.Chat.Completions.ChatCompletionRole);
     // Assuming parts is an array of Part objects and we concatenate their text representation.
     // OpenAI API expects a string or an array of content parts (e.g. for images).
     // For simplicity, we'll join text parts here.
-    const textContent = (content.parts as Part[])
+    const textContent = (contentObj.parts as Part[])
       .map((part) => ('text' in part ? part.text : ''))
       .join('');
-    messages.push({ role, content: textContent });
+    messages.push({ role, content: textContent } as OpenAI.Chat.Completions.ChatCompletionMessageParam);
   }
   return messages;
 }
@@ -235,7 +244,7 @@ class SelfHostedOpenAIContentGenerator implements ContentGenerator {
     return {
       candidates: choices,
       // TODO: Populate promptFeedback if possible
-    } as GenerateContentResponse; // Type assertion might be needed depending on exact mapping
+    } as unknown as GenerateContentResponse; // Type assertion might be needed depending on exact mapping
   }
 
   async generateContentStream(
@@ -265,7 +274,7 @@ class SelfHostedOpenAIContentGenerator implements ContentGenerator {
         });
         yield {
           candidates: choices,
-        } as GenerateContentResponse;
+        } as unknown as GenerateContentResponse;
       }
     }
     return generator();
@@ -283,6 +292,7 @@ class SelfHostedOpenAIContentGenerator implements ContentGenerator {
     );
     const textContent = (request.contents as Content[])
       .flatMap((c) => c.parts)
+      .filter((p): p is Part => p !== undefined)
       .map((p: Part) => ('text' in p ? p.text : ''))
       .join(' ');
     // Rough estimate: 1 token ~ 4 chars in English

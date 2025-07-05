@@ -255,9 +255,6 @@ export class Config {
       // Use the authMethod passed to refreshAuth, or the instance's authType if not provided
       authMethod || this.authType,
       this,
-      // Pass self-hosted params from Config instance to createContentGeneratorConfig
-      this.selfHostedEndpoint,
-      this.selfHostedApiKey,
     );
 
     const gc = new GeminiClient(this);
